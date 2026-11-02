@@ -12,6 +12,7 @@ FROM python:3.13-slim
 # pip is not needed at runtime and its vendored libraries carry known CVEs.
 RUN rm -rf /usr/local/lib/python3*/site-packages/pip /usr/local/lib/python3*/site-packages/pip-*.dist-info \
     /usr/local/lib/python3*/ensurepip /usr/local/bin/pip* \
+    && apt-get update && apt-get upgrade --yes && rm -rf /var/lib/apt/lists/* \
     && useradd --uid 10001 --no-create-home --shell /usr/sbin/nologin app
 COPY --from=build /venv /venv
 WORKDIR /app
