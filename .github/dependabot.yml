@@ -1,17 +1,33 @@
+# Weekly updates, grouped into one pull request per ecosystem.
+# Major versions are skipped because they need manual review.
 version: 2
 updates:
   - package-ecosystem: pip
     directory: /
     schedule: {interval: weekly}
+    groups:
+      python: {patterns: ["*"]}
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: npm
     directory: /web
     schedule: {interval: weekly}
+    groups:
+      web: {patterns: ["*"]}
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: docker
-    directory: /
+    directories: [/, /web]
     schedule: {interval: weekly}
-  - package-ecosystem: docker
-    directory: /web
-    schedule: {interval: weekly}
+    groups:
+      images: {patterns: ["*"]}
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
     schedule: {interval: weekly}
+    groups:
+      actions: {patterns: ["*"]}
