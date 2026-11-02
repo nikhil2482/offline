@@ -1,0 +1,111 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: offline
+          POSTGRES_PASSWORD: ci_only_password
+          POSTGRES_DB: offline
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U offline" --health-interval 5s --health-retries 10
+    env:
+      OFFLINE_TEST_DATABASE_URL: postgresql://offline:ci_only_password@localhost:5432/offline
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+      - run: pip install --require-hashes -r requirements-dev.lock
+      - run: pip install --no-deps -e .
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: mypy
+      - run: pytest
+      - run: pip-audit -r requirements.lock
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+      - run: npm ci --ignore-scripts
+      - run: npm run lint
+      - run: npm run build
+      - run: npm audit --omit=dev
+      - run: npm audit --audit-level=high
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  images:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: docker build -t offline-api:ci .
+      - run: docker build -t offline-web:ci web
+      - name: Scan api image
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
+        with:
+          image-ref: offline-api:ci
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "1"
+      - name: Scan web image
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
+        with:
+          image-ref: offline-web:ci
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "1"
+      - name: SBOM for api image
+        uses: anchore/sbom-action@006b7ce8314066bdf1765b4500370d40fa6917a3 # v0.24.2
+        with:
+          image: offline-api:ci
+          format: cyclonedx-json
+          output-file: sbom-api.cdx.json
+      - name: SBOM for web image
+        uses: anchore/sbom-action@006b7ce8314066bdf1765b4500370d40fa6917a3 # v0.24.2
+        with:
+          image: offline-web:ci
+          format: cyclonedx-json
+          output-file: sbom-web.cdx.json
+
+  egress:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: |
+          cp .env.example .env
+          sed -i "s/^POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=ci_only_password/" .env
+          sed -i "s/^OFFLINE_UID=.*/OFFLINE_UID=$(id -u)/; s/^OFFLINE_GID=.*/OFFLINE_GID=$(id -g)/" .env
+          mkdir -p data
+      - run: docker compose up -d --build --wait db api
+      - name: The api container must not reach the internet
+        run: docker compose exec -T api python -m offline.egress_check
+      - if: always()
+        run: docker compose down -v

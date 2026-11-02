@@ -1,0 +1,9 @@
+# Adds internet access for the api container only. Use it to fetch sources, or
+# to run cloud mode. Leave it off on an air gapped machine.
+#   docker compose -f compose.yaml -f compose.connected.yaml run --rm api offline fetch
+services:
+  api:
+    networks: [backend, egress]
+
+networks:
+  egress: {}
