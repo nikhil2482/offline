@@ -1,0 +1,61 @@
+# Only sources listed here can be fetched or ingested.
+#
+# FAR text comes from the eCFR versioner API, pinned to one date so answers are
+# reproducible. Change the date in both url and cite_url to move to a new version.
+#
+# marking:
+#   public_domain   public domain text from an allowed host
+#   public_release  the file must say it is approved for public release or ingest refuses it
+
+allowed_hosts:
+  - www.ecfr.gov
+
+sources:
+  - id: far-part-1
+    title: FAR Part 1, Federal Acquisition Regulations System
+    url: https://www.ecfr.gov/api/versioner/v1/full/2026-10-01/title-48.xml?part=1
+    format: ecfr_xml
+    marking: public_domain
+    cite_url: https://www.ecfr.gov/on/2026-10-01/title-48/section-{section}
+
+  - id: far-part-2
+    title: FAR Part 2, Definitions of Words and Terms
+    url: https://www.ecfr.gov/api/versioner/v1/full/2026-10-01/title-48.xml?part=2
+    format: ecfr_xml
+    marking: public_domain
+    cite_url: https://www.ecfr.gov/on/2026-10-01/title-48/section-{section}
+
+  - id: far-part-6
+    title: FAR Part 6, Competition Requirements
+    url: https://www.ecfr.gov/api/versioner/v1/full/2026-10-01/title-48.xml?part=6
+    format: ecfr_xml
+    marking: public_domain
+    cite_url: https://www.ecfr.gov/on/2026-10-01/title-48/section-{section}
+
+  - id: far-part-13
+    title: FAR Part 13, Simplified Acquisition Procedures
+    url: https://www.ecfr.gov/api/versioner/v1/full/2026-10-01/title-48.xml?part=13
+    format: ecfr_xml
+    marking: public_domain
+    cite_url: https://www.ecfr.gov/on/2026-10-01/title-48/section-{section}
+
+  - id: far-part-15
+    title: FAR Part 15, Contracting by Negotiation
+    url: https://www.ecfr.gov/api/versioner/v1/full/2026-10-01/title-48.xml?part=15
+    format: ecfr_xml
+    marking: public_domain
+    cite_url: https://www.ecfr.gov/on/2026-10-01/title-48/section-{section}
+
+  - id: far-part-19
+    title: FAR Part 19, Small Business Programs
+    url: https://www.ecfr.gov/api/versioner/v1/full/2026-10-01/title-48.xml?part=19
+    format: ecfr_xml
+    marking: public_domain
+    cite_url: https://www.ecfr.gov/on/2026-10-01/title-48/section-{section}
+
+  # To add a PDF, add its host to allowed_hosts and use:
+  # - id: example
+  #   title: Publication title
+  #   url: https://example.host/path/to/file.pdf
+  #   format: pdf
+  #   marking: public_release

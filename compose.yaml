@@ -1,0 +1,57 @@
+# Offline by default. The backend network is internal, so no service on it can
+# reach the internet. Only the web container is published, and only on localhost.
+name: offline
+
+x-hardened: &hardened
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  tmpfs: [/tmp]
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: offline
+      POSTGRES_DB: offline
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes: [pgdata:/var/lib/postgresql/data]
+    networks: [backend]
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "offline"]
+      interval: 5s
+      retries: 10
+
+  ollama:
+    image: ollama/ollama:0.40.10
+    volumes: [ollama:/root/.ollama]
+    networks: [backend]
+
+  api:
+    <<: *hardened
+    build: .
+    user: "${OFFLINE_UID:-10001}:${OFFLINE_GID:-10001}"
+    env_file: .env
+    environment:
+      OFFLINE_DATABASE_URL: postgresql://offline:${POSTGRES_PASSWORD}@db:5432/offline
+      OFFLINE_OLLAMA_URL: http://ollama:11434
+    volumes: [./data:/app/data]
+    networks: [backend]
+    depends_on:
+      db: {condition: service_healthy}
+
+  web:
+    <<: *hardened
+    build: ./web
+    ports: ["127.0.0.1:8080:8080"]
+    networks: [backend, frontend]
+    depends_on: [api]
+
+networks:
+  backend:
+    internal: true
+  frontend: {}
+
+volumes:
+  pgdata: {}
+  ollama: {}

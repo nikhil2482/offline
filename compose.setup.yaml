@@ -1,0 +1,11 @@
+# Pulls models into the shared ollama volume on a connected machine.
+# Run scripts/pull-models.sh instead of using this file directly.
+name: offline
+
+services:
+  ollama-setup:
+    image: ollama/ollama:0.40.10
+    volumes: [ollama:/root/.ollama]
+
+volumes:
+  ollama: {}

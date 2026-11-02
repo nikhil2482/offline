@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic test data shaped like eCFR XML. Not real regulation text. -->
+<DIV5 N="99" TYPE="PART">
+  <HEAD>PART 99 SAMPLE PROCEDURES</HEAD>
+  <DIV6 N="A" TYPE="SUBPART">
+    <HEAD>Subpart 99.0 General</HEAD>
+    <DIV8 N="99.001" TYPE="SECTION">
+      <HEAD>§ 99.001 Definitions.</HEAD>
+      <P>As used in this sample part, <I>widget</I> means a test item.</P>
+      <P>Sample threshold means 100 widgets.</P>
+    </DIV8>
+    <DIV8 N="99.002" TYPE="SECTION">
+      <HEAD>§ 99.002 Policy.</HEAD>
+      <P>(a) Offices shall buy widgets in the simplest way that meets the need.</P>
+    </DIV8>
+    <DIV8 N="99.003" TYPE="APPENDIX">
+      <HEAD>Not a section</HEAD>
+      <P>This element should be skipped.</P>
+    </DIV8>
+  </DIV6>
+</DIV5>
