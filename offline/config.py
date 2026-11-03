@@ -6,6 +6,11 @@ from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+class Provider(StrEnum):
+    OPENAI = "openai"
+    ANTHROPIC = "anthropic"
+
+
 class Mode(StrEnum):
     OFFLINE = "offline"
     CLOUD = "cloud"
@@ -20,8 +25,12 @@ class Settings(BaseSettings):
     chat_model: str = "llama3.1:8b"
     embed_model: str = "nomic-embed-text"
     embed_dim: int = 768
+    cloud_provider: Provider = Provider.OPENAI
+    openai_api_key: str = ""
+    openai_model: str = "gpt-6.1-sol"
+    openai_reasoning_effort: str = "low"
     anthropic_api_key: str = ""
-    cloud_model: str = "claude-sonnet-5-5"
+    anthropic_model: str = "claude-sonnet-5-5"
     sources_file: Path = Path("sources.yaml")
     data_dir: Path = Path("data")
     top_k: int = 6

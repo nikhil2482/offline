@@ -94,3 +94,33 @@ class AnthropicChat:
         response.raise_for_status()
         blocks = response.json()["content"]
         return "".join(b["text"] for b in blocks if b.get("type") == "text")
+
+
+class OpenAIChat:
+    _URL = "https://api.openai.com/v1/chat/completions"
+
+    def __init__(self, client: httpx.Client, model: str, api_key: str, effort: str) -> None:
+        if not api_key:
+            raise ValueError("cloud mode needs OFFLINE_OPENAI_API_KEY")
+        self._client = client
+        self._api_key = api_key
+        self._model = model
+        self._effort = effort
+        self.name = f"openai/{model}"
+
+    def complete(self, system: str, prompt: str) -> str:
+        response = self._client.post(
+            self._URL,
+            headers={"Authorization": f"Bearer {self._api_key}"},
+            json={
+                "model": self._model,
+                "reasoning_effort": self._effort,
+                "max_completion_tokens": 4000,
+                "messages": [
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": prompt},
+                ],
+            },
+        )
+        response.raise_for_status()
+        return str(response.json()["choices"][0]["message"]["content"] or "")

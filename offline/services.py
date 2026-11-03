@@ -9,8 +9,8 @@ import httpx
 from offline.answer import Answerer
 from offline.audit import AuditLog
 from offline.auth import UserStore
-from offline.config import Mode, Settings
-from offline.models import AnthropicChat, ChatModel, OllamaChat, OllamaEmbedder
+from offline.config import Mode, Provider, Settings
+from offline.models import AnthropicChat, ChatModel, OllamaChat, OllamaEmbedder, OpenAIChat
 from offline.ratelimit import RateLimiter
 from offline.sources import Allowlist, load_allowlist
 from offline.store import PgVectorStore, Store
@@ -35,9 +35,16 @@ def build(settings: Settings) -> Services:
     store = PgVectorStore(settings.database_url, settings.embed_dim)
 
     model: ChatModel
-    if settings.mode is Mode.CLOUD:
+    if settings.mode is Mode.CLOUD and settings.cloud_provider is Provider.OPENAI:
+        model = OpenAIChat(
+            httpx.Client(timeout=120),
+            settings.openai_model,
+            settings.openai_api_key,
+            settings.openai_reasoning_effort,
+        )
+    elif settings.mode is Mode.CLOUD:
         model = AnthropicChat(
-            httpx.Client(timeout=60), settings.cloud_model, settings.anthropic_api_key
+            httpx.Client(timeout=60), settings.anthropic_model, settings.anthropic_api_key
         )
     else:
         model = OllamaChat(local, settings.chat_model)

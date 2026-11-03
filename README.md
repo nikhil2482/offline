@@ -58,9 +58,9 @@ Details are in [THREAT_MODEL.md](THREAT_MODEL.md) and [CONTROLS.md](CONTROLS.md)
 
 * Chat in offline mode: Llama 3.1 8B from Meta, served by Ollama
 * Embeddings in both modes: nomic embed text from Nomic AI, served by Ollama
-* Chat in cloud mode: Claude through the Anthropic API
+* Chat in cloud mode: GPT 6.1 Sol through the OpenAI API by default, or Claude through the Anthropic API
 
-All three come from U.S. companies. Embeddings stay local in both modes, so source text is never sent out to be embedded. In cloud mode the question and the retrieved chunks are sent to the API.
+All of them come from U.S. companies. Set `OFFLINE_CLOUD_PROVIDER` to pick the cloud provider. Embeddings stay local in both modes, so source text is never sent out to be embedded. In cloud mode the question and the retrieved chunks are sent to the API.
 
 ## Run it
 
