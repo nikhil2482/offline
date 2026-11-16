@@ -1,4 +1,4 @@
-FROM python:3.13-slim AS build
+FROM python:3.15-slim AS build
 WORKDIR /src
 RUN python -m venv /venv
 COPY requirements.lock .
@@ -8,7 +8,7 @@ COPY offline ./offline
 RUN /venv/bin/pip install --no-cache-dir --no-deps . \
     && /venv/bin/pip uninstall --yes pip
 
-FROM python:3.13-slim
+FROM python:3.15-slim
 # pip is not needed at runtime and its vendored libraries carry known CVEs.
 RUN rm -rf /usr/local/lib/python3*/site-packages/pip /usr/local/lib/python3*/site-packages/pip-*.dist-info \
     /usr/local/lib/python3*/ensurepip /usr/local/bin/pip* \
